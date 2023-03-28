@@ -15,13 +15,31 @@ class Pisti:
 
         self.all_cards = self.get_all_cards()
         self.shuffle(self.all_cards)
+        self.computer = Player(True)
+        self.person = Player(False)
 
     def play(self):
         txt_operations = TxtOperations()
+        cards_on_desk = self.all_cards[0:4]
         for round in range(0, 6):
+            print("*************")
+            print(f"Round{round+1}:")
             filename = "tur" + str(round + 1) + ".txt"
-            computer_deck = self.all_cards[8 * round: 8 * round + 4]
-            person_deck = self.all_cards[8 * round + 4: 8 * round + 8]
+
+            computer_deck = self.all_cards[8 * round+4: 8 * round + 8]
+            person_deck = self.all_cards[8 * round + 8: 8 * round + 12]
+            self.person.give_deck(person_deck)
+            self.computer.give_deck(computer_deck)
+
+            for turn in range(8):
+                if turn %2 == 0:    # Person Turn
+                    None
+                else:               # Computer Turn
+                    None
+
+
+
+
             txt_operations.write_txt(filename, computer_deck, person_deck)
 
     def shuffle(self, deck):
