@@ -2,6 +2,7 @@ from txt_operations import TxtOperations
 from player import Player
 import random
 
+
 class Pisti:
 
     def __init__(self):
@@ -15,18 +16,17 @@ class Pisti:
         self.all_cards = self.get_all_cards()
         self.shuffle(self.all_cards)
 
-
-
     def play(self):
         txt_operations = TxtOperations()
-        for round in range(1,7):
-            filename = "tur"+str(round)+".txt"
-
-            
-            #txt_operations.write_txt(filename, deck)
+        for round in range(0, 6):
+            filename = "tur" + str(round + 1) + ".txt"
+            computer_deck = self.all_cards[8 * round: 8 * round + 4]
+            person_deck = self.all_cards[8 * round + 4: 8 * round + 8]
+            txt_operations.write_txt(filename, computer_deck, person_deck)
 
     def shuffle(self, deck):
         random.shuffle(deck)
+
     def get_all_cards(self):
         cards = []
         for i in range(10):
@@ -69,5 +69,3 @@ class Pisti:
         cards.append(["q", "spade", "black"])
         cards.append(["k", "spade", "black"])
         return cards
-
-
