@@ -11,7 +11,6 @@ class Pisti:
         self.CLOVER_2 = 2
         self.AS = 1
         self.PISTI = 10
-        self.total_card = 52
         self.all_cards = self.get_all_cards()
         self.computer = Player(True)
         self.person = Player(False)
@@ -20,49 +19,73 @@ class Pisti:
         self.shuffle(self.all_cards)
         txt_operations = TxtOperations()
         cards_on_desk = self.all_cards[0:4]
+        beaten = False
         for round in range(0, 6):
             print("*************")
             print(f"Round{round + 1}:")
             filename = "tur" + str(round + 1) + ".txt"
             computer_deck, person_deck = self.give_players_their_cards(round)
-            beaten = False
             for turn in range(1, 9):
                 print("Turn:", turn)
                 self.show_cards_on_the_desk(cards_on_desk, beaten)
-                if turn % 2 == 1:  # Person Turn
+                if turn % 2 == 1:
                     playing_card, is_successful = self.person.play(cards_on_desk, beaten)
                     if is_successful:
                         self.person.add_cards_memory(cards_on_desk)
+                        if self.is_pisti(cards_on_desk):
+                            print("Pisti yapildi.")
+                            self.person.increase_num_of_pisti()
                         cards_on_desk.append(playing_card)
                         self.person.add_winned_cards(cards_on_desk)
-                else:  # Computer Turn
+                        self.clear_the_cards_on_desk(cards_on_desk)
+                    else:
+                        cards_on_desk.append(playing_card)
+                else:
                     playing_card, is_successful = self.computer.play(cards_on_desk, beaten)
                     if is_successful:
                         self.computer.add_cards_memory(cards_on_desk)
+                        if self.is_pisti(cards_on_desk):
+                            print("Pisti Yapildi.")
+                            self.computer.increase_num_of_pisti()
                         cards_on_desk.append(playing_card)
                         self.computer.add_winned_cards(cards_on_desk)
+                        self.clear_the_cards_on_desk(cards_on_desk)
+                    else:
+                        cards_on_desk.append(playing_card)
 
                 self.computer.add_cards_memory(playing_card)
                 self.person.add_cards_memory(playing_card)
-                if is_successful:
-                    self.clear_the_cards_on_desk(cards_on_desk)
-                else:
-                    cards_on_desk.append(playing_card)
 
             # Turn is finished. If exists, next turn
+
             self.calculate_players_score()
             self.clear_players_winned_cards()
-
+            print("Person Score:", self.person.score)
+            print("Computer score:", self.computer.score)
             txt_operations.write_txt(filename, computer_deck, person_deck)
+
         self.find_game_result()
 
+    def is_pisti(self, cards_on_desk):
+        if len(cards_on_desk) == 1:
+            return True
+        else:
+            return False
+
     def find_game_result(self):
+        self.calculate_player_with_more_card()
         if self.computer.score > self.person.score:
             print("Computer win the game.")
         elif self.computer.score < self.person.score:
             print("Person win the game.")
         else:
             print("Nobody wins the game. Draw")
+
+    def calculate_player_with_more_card(self):
+        if self.person.get_num_of_all_winned_cards() > self.computer.get_top_card_on_desk():
+            self.person.increase_score(3)
+        elif self.person.get_num_of_all_winned_cards() < self.computer.get_top_card_on_desk():
+            self.computer.increase_score(3)
 
     def calculate_players_score(self):
         self.person.calculate_score()
