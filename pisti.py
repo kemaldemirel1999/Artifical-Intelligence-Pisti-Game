@@ -14,60 +14,79 @@ class Pisti:
         self.all_cards = self.get_all_cards()
         self.computer = Player(True)
         self.person = Player(False)
+        self.txt_operations = TxtOperations()
 
     def start(self):
         self.shuffle(self.all_cards)
-        txt_operations = TxtOperations()
+
         cards_on_desk = self.all_cards[0:4]
         beaten = False
         for round in range(0, 6):
-            print("*************")
+            print("***************************************")
             print(f"Round{round + 1}:")
-            filename = "tur" + str(round + 1) + ".txt"
             computer_deck, person_deck = self.give_players_their_cards(round)
+
+            # Oyun dosyaya kaydedilir.
+            self.write_file_game_info(computer_deck, person_deck, round)
+
             for turn in range(1, 9):
-                print("Turn:", turn)
+                print("------------------------------------------------")
                 self.show_cards_on_the_desk(cards_on_desk, beaten)
                 if turn % 2 == 1:
-                    playing_card, is_successful = self.person.play(cards_on_desk, beaten)
-                    if is_successful:
-                        self.person.add_cards_memory(cards_on_desk)
-                        if self.is_pisti(cards_on_desk):
-                            print("Pisti yapildi.")
-                            self.person.increase_num_of_pisti()
-                        cards_on_desk.append(playing_card)
-                        self.person.add_winned_cards(cards_on_desk)
-                        self.clear_the_cards_on_desk(cards_on_desk)
-                    else:
-                        cards_on_desk.append(playing_card)
+                    cards_on_desk, beaten, playing_card = self.person_turn(beaten, cards_on_desk)
                 else:
-                    playing_card, is_successful = self.computer.play(cards_on_desk, beaten)
-                    if is_successful:
-                        self.computer.add_cards_memory(cards_on_desk)
-                        if self.is_pisti(cards_on_desk):
-                            print("Pisti Yapildi.")
-                            self.computer.increase_num_of_pisti()
-                        cards_on_desk.append(playing_card)
-                        self.computer.add_winned_cards(cards_on_desk)
-                        self.clear_the_cards_on_desk(cards_on_desk)
-                    else:
-                        cards_on_desk.append(playing_card)
+                    cards_on_desk, beaten, playing_card = self.computer_turn(beaten, cards_on_desk)
 
-                self.computer.add_cards_memory(playing_card)
-                self.person.add_cards_memory(playing_card)
+                self.save_card_info(playing_card)
 
-            # Turn is finished. If exists, next turn
-
+            # Oyuncu skorları hesaplanır.
             self.calculate_players_score()
+            # Kazanılan kartlar listesi sıfırlanır.
             self.clear_players_winned_cards()
-            print("Person Score:", self.person.score)
-            print("Computer score:", self.computer.score)
-            txt_operations.write_txt(filename, computer_deck, person_deck)
 
         self.find_game_result()
 
-    def is_pisti(self, cards_on_desk):
-        if len(cards_on_desk) == 1:
+    def write_file_game_info(self, computer_deck, person_deck, round):
+        filename = "tur" + str(round + 1) + ".txt"
+        self.txt_operations.write_txt(filename, computer_deck, person_deck)
+
+    def save_card_info(self, playing_card):
+        arr = []
+        arr.append(playing_card)
+        self.computer.add_cards_memory(arr)
+        self.person.add_cards_memory(arr)
+
+    def computer_turn(self, beaten, cards_on_desk):
+        playing_card, is_successful = self.computer.play(cards_on_desk, beaten)
+        if is_successful:
+            self.computer.add_cards_memory(cards_on_desk)
+            if self.is_pisti(cards_on_desk, playing_card):
+                print("Pisti Yapildi.")
+                self.computer.increase_num_of_pisti()
+            cards_on_desk.append(playing_card)
+            self.computer.add_winned_cards(cards_on_desk)
+            cards_on_desk = self.clear_the_cards_on_desk()
+            beaten = True
+        else:
+            cards_on_desk.append(playing_card)
+        return cards_on_desk, beaten, playing_card
+
+    def person_turn(self, beaten, cards_on_desk):
+        playing_card, is_successful = self.person.play(cards_on_desk, beaten)
+        if is_successful:
+            if self.is_pisti(cards_on_desk, playing_card):
+                print("Pisti yapildi.")
+                self.person.increase_num_of_pisti()
+            cards_on_desk.append(playing_card)
+            self.person.add_winned_cards(cards_on_desk)
+            cards_on_desk = self.clear_the_cards_on_desk()
+            beaten = True
+        else:
+            cards_on_desk.append(playing_card)
+        return cards_on_desk, beaten, playing_card
+
+    def is_pisti(self, cards_on_desk, playing_card):
+        if len(cards_on_desk) == 1 and playing_card[0] != "j":
             return True
         else:
             return False
@@ -95,8 +114,9 @@ class Pisti:
         self.person.clear_winned_cards()
         self.computer.clear_winned_cards()
 
-    def clear_the_cards_on_desk(self, cards_on_desk):
+    def clear_the_cards_on_desk(self):
         cards_on_desk = []
+        return cards_on_desk
 
     def give_players_their_cards(self, round):
         computer_deck = self.all_cards[8 * round + 4: 8 * round + 8]
@@ -122,18 +142,21 @@ class Pisti:
 
     def get_all_cards(self):
         cards = []
-        for i in range(10):
-            if i == 0:
-                cards.append(["a", "clover", "black"])
+        for i in range(1, 11):
+            if i == 1:
+                cards.append(["a", "clover", "black", 1])
                 continue
             else:
-                cards.append([str(i), "clover", "black"])
-        cards.append(["j", "clover", "black"])
-        cards.append(["q", "clover", "black"])
-        cards.append(["k", "clover", "black"])
+                if i == 2:
+                    cards.append([str(i), "clover", "black", 2])
+                else:
+                    cards.append([str(i), "clover", "black", 0])
+        cards.append(["j", "clover", "black", 1])
+        cards.append(["q", "clover", "black", 0])
+        cards.append(["k", "clover", "black", 0])
 
-        for i in range(10):
-            if i == 0:
+        for i in range(1, 11):
+            if i == 1:
                 cards.append(["a", "diamond", "red"])
                 continue
             else:
@@ -142,8 +165,8 @@ class Pisti:
         cards.append(["q", "diamond", "red"])
         cards.append(["k", "diamond", "red"])
 
-        for i in range(10):
-            if i == 0:
+        for i in range(1, 11):
+            if i == 1:
                 cards.append(["a", "heart", "red"])
                 continue
             else:
@@ -152,8 +175,8 @@ class Pisti:
         cards.append(["q", "heart", "red"])
         cards.append(["k", "heart", "red"])
 
-        for i in range(10):
-            if i == 0:
+        for i in range(1, 11):
+            if i == 1:
                 cards.append(["a", "spade", "black"])
                 continue
             else:

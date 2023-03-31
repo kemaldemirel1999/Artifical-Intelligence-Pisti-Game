@@ -12,20 +12,17 @@ class Player:
 
     def play(self, cards_on_desk, beaten):
         if self.is_computer:
-            self.computer_decision(cards_on_desk)
             deck_on_desk = cards_on_desk[:]
             if not beaten:
                 deck_on_desk = cards_on_desk[3:len(cards_on_desk)]
-                print("Computer cannot see every card:")
             self.add_cards_memory(deck_on_desk)
             top_card_on_desk = self.get_top_card_on_desk(deck_on_desk)
-
             playing_card, index = self.computer_decision(deck_on_desk)
+            self.print_deck()
+            print("Computer's Played Card:", playing_card)
             self.remove_card_from_deck(index)
-            if self.is_it_successfull(top_card_on_desk, playing_card):
-                return playing_card, True
-            else:
-                return playing_card, False
+
+            return playing_card, self.is_it_successfull(top_card_on_desk, playing_card)
 
         else:
             self.print_deck()
@@ -35,10 +32,7 @@ class Player:
                 if self.check_deck_index_validity(index):
                     playing_card = self.deck[index]
                     self.remove_card_from_deck(index)
-                    if self.is_it_successfull(top_card_on_desk, playing_card):
-                        return playing_card, True
-                    else:
-                        return playing_card, False
+                    return playing_card, self.is_it_successfull(top_card_on_desk, playing_card)
                 else:
                     print("Hatali Index Girildi. Tekrar Deneyiniz.")
 
@@ -47,24 +41,73 @@ class Player:
 
     def computer_decision(self, deck_on_desk):
         num_of_card_on_desk = len(deck_on_desk)
-        if num_of_card_on_desk == 1:
-            top_card_on_desk = self.get_top_card_on_desk(deck_on_desk)
-            # least_probability_cards = self.find_card_probabilities()
-
-
-        elif num_of_card_on_desk > 0:
-            top_card_on_desk = self.get_top_card_on_desk(deck_on_desk)
-            cards_on_memory = self.cards_memory
-
-            last_index = len(self.deck) - 1
-            playing_card = self.deck[last_index]
-
-            return playing_card, 0
-        elif num_of_card_on_desk == 0:
-            None
-
-    def choose_best_card(self):
+        cards_on_memory = self.cards_memory
         card_probabilities = self.find_card_probabilities()
+        top_card_on_desk = self.get_top_card_on_desk(deck_on_desk)
+        if num_of_card_on_desk > 0:
+            playing_card = None
+            card_found = False
+            for card in self.deck:
+                if card[0] == top_card_on_desk[0] and least_prob_cards.__contains__(card[0]):
+                    playing_card = card
+                    card_found = True
+                    break
+            if not card_found:
+                for card in self.deck:
+                    if card[0] == top_card_on_desk[0]:
+                        playing_card = card
+                        card_found = True
+                        break
+            if not card_found:
+                card_probabilities = self.find_card_probabilities()
+                least_prob_card = self.deck[0]
+                # Olasılığın yanında puan kıyaslaması da yap.
+                proper_cards_with_probabilities = []
+                for card in self.deck:
+                    if card_probabilities[card[0]] < card_probabilities[least_prob_card[0]]:
+                        least_prob_card = card
+                        break
+                for card in self.deck:
+                    if card_probabilities[least_prob_card[0]] == card_probabilities[card[0]]:
+                        proper_cards_with_probabilities.append(card)
+                # En düşük olasılıklar arasından en düşük puanlı kart seçilir.
+                lowest_val_card = proper_cards_with_probabilities[0]
+
+
+                playing_card = least_prob_card
+            index = self.get_index_of_card(playing_card)
+            return playing_card, index
+
+        elif num_of_card_on_desk == 0:
+            card_found = False
+            for card in self.deck:
+                if least_prob_cards.__contains__(card[0]):
+                    playing_card = card
+                    card_found = True
+                    break
+            if not card_found:
+                playing_card = self.get_least_value_card()
+            return None
+    def sort_deck_by_value(self):
+        None
+    def sort_deck_by_probability(self):
+        card_probabilities = self.find_card_probabilities()
+        sorted_deck = self.deck.copy()
+
+
+    def get_index_of_card(self, card):
+        for i in range(len(self.deck)):
+            if self.deck[i][0] == card[0]:
+                return i
+        return 0
+
+    def print_card_probabilities(self, card_probabilities):
+        print("Q:", card_probabilities["q"])
+        print("J:", card_probabilities["j"])
+        print("K:", card_probabilities["k"])
+        print("A:", card_probabilities["a"])
+        for i in range(1, 10):
+            print(i, ":", card_probabilities[str(i)])
 
     def find_card_probabilities(self):
         count_a, count_j, count_q, count_k, digit_card_counter, remaining_total_card = self.find_num_of_played_cards()
@@ -76,7 +119,7 @@ class Player:
 
         for i in range(1, 10):
             index = str(i)
-            card_probabilities[index] = (4 - digit_card_counter[i]) / remaining_total_card
+            card_probabilities[index] = (4 - digit_card_counter[index]) / remaining_total_card
         return card_probabilities
 
     def find_num_of_played_cards(self):
@@ -84,23 +127,23 @@ class Player:
         count_j = 0
         count_q = 0
         count_k = 0
-        digit_card_counter = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0}
+        digit_card_counter = {"1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0}
         for card in self.cards_memory:
             card_name = card[0]
             if card_name == "a":
                 count_a = count_a + 1
-            elif card_name.isdigit():
-                digit = card_name
-                digit_card_counter[digit] = digit_card_counter[digit] + 1
             elif card_name == "j":
                 count_j = count_j + 1
             elif card_name == "q":
                 count_q = count_q + 1
             elif card_name == "k":
                 count_k = count_k + 1
+            else:
+                digit_card_counter[card_name] = digit_card_counter[card_name] + 1
+
         total = 0
         for i in range(1, 10):
-            total = total + digit_card_counter[i]
+            total = total + digit_card_counter[str(i)]
 
         remaining_total_card = self.total_card - (count_a + count_j + count_k + count_q + total)
         return count_a, count_j, count_q, count_k, digit_card_counter, remaining_total_card
@@ -113,20 +156,20 @@ class Player:
 
     def get_top_card_on_desk(self, cards_on_desk):
         if cards_on_desk is None or len(cards_on_desk) < 1:
-            return False
+            return None
         else:
             return cards_on_desk[len(cards_on_desk) - 1]
 
     def add_cards_memory(self, cards_on_desk):
         for card in cards_on_desk:
             if not self.cards_memory.__contains__(card):
+                print("Adding_card:",card)
                 self.cards_memory.append(card)
 
     def is_it_successfull(self, top_card_on_desk, playing_card):
         if top_card_on_desk is None:
             return False
-        elif (top_card_on_desk[0] == playing_card[0] and top_card_on_desk[1] == playing_card[1]) or playing_card[
-            0] == "j":
+        elif (top_card_on_desk[0] == playing_card[0]) or playing_card[0] == "j":
             return True
         else:
             return False
