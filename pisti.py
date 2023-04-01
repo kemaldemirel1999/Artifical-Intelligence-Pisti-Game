@@ -95,15 +95,21 @@ class Pisti:
         self.calculate_player_with_more_card()
         if self.computer.score > self.person.score:
             print("Computer win the game.")
+            print("Computer score:",self.computer.score)
+            print("Person score:",self.person.score)
         elif self.computer.score < self.person.score:
             print("Person win the game.")
+            print("Computer score:", self.computer.score)
+            print("Person score:", self.person.score)
         else:
             print("Nobody wins the game. Draw")
+            print("Computer score:", self.computer.score)
+            print("Person score:", self.person.score)
 
     def calculate_player_with_more_card(self):
-        if self.person.get_num_of_all_winned_cards() > self.computer.get_top_card_on_desk():
+        if self.person.get_num_of_all_winned_cards() > self.computer.get_num_of_all_winned_cards():
             self.person.increase_score(3)
-        elif self.person.get_num_of_all_winned_cards() < self.computer.get_top_card_on_desk():
+        elif self.person.get_num_of_all_winned_cards() < self.computer.get_num_of_all_winned_cards():
             self.computer.increase_score(3)
 
     def calculate_players_score(self):
@@ -157,31 +163,34 @@ class Pisti:
 
         for i in range(1, 11):
             if i == 1:
-                cards.append(["a", "diamond", "red"])
+                cards.append(["a", "diamond", "red", 1])
                 continue
             else:
-                cards.append([str(i), "diamond", "red"])
-        cards.append(["j", "diamond", "red"])
-        cards.append(["q", "diamond", "red"])
-        cards.append(["k", "diamond", "red"])
+                if i == 10:
+                    cards.append([str(i), "diamond", "red", 3])
+                else:
+                    cards.append([str(i), "diamond", "red", 0])
+        cards.append(["j", "diamond", "red", 1])
+        cards.append(["q", "diamond", "red", 0])
+        cards.append(["k", "diamond", "red", 0])
 
         for i in range(1, 11):
             if i == 1:
-                cards.append(["a", "heart", "red"])
+                cards.append(["a", "heart", "red", 1])
                 continue
             else:
-                cards.append([str(i), "heart", "red"])
-        cards.append(["j", "heart", "red"])
-        cards.append(["q", "heart", "red"])
-        cards.append(["k", "heart", "red"])
+                cards.append([str(i), "heart", "red", 0])
+        cards.append(["j", "heart", "red", 1])
+        cards.append(["q", "heart", "red", 0])
+        cards.append(["k", "heart", "red", 0])
 
         for i in range(1, 11):
             if i == 1:
-                cards.append(["a", "spade", "black"])
+                cards.append(["a", "spade", "black", 1])
                 continue
             else:
-                cards.append([str(i), "spade", "black"])
-        cards.append(["j", "spade", "black"])
-        cards.append(["q", "spade", "black"])
-        cards.append(["k", "spade", "black"])
+                cards.append([str(i), "spade", "black", 0])
+        cards.append(["j", "spade", "black", 1])
+        cards.append(["q", "spade", "black", 0])
+        cards.append(["k", "spade", "black", 0])
         return cards

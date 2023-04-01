@@ -1,13 +1,13 @@
 Computer's Deck:
+10, heart, red
+6, clover, black
+4, clover, black
 8, spade, black
-4, diamond, red
-k, diamond, red
-6, diamond, red
 
 ************
 
 xPerson's Deck:
-j, spade, black
-2, spade, black
-8, diamond, red
-1, diamond, red
+6, diamond, red
+q, clover, black
+9, spade, black
+q, spade, black
