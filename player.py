@@ -11,6 +11,7 @@ class Player:
         self.total_card = 52
 
     def play(self, cards_on_desk, beaten):
+        # self.print_card_memory()
         if self.is_computer:
             return self.computer_move(cards_on_desk, beaten)
         else:
@@ -119,12 +120,18 @@ class Player:
                 return i
         return 0
 
+    def print_card_memory(self):
+        print("Memory:",end="")
+        for card in self.cards_memory:
+            print(card,", ", end="")
+        print()
+
     def print_card_probabilities(self, card_probabilities):
         print("Q:", card_probabilities["q"])
         print("J:", card_probabilities["j"])
         print("K:", card_probabilities["k"])
         print("A:", card_probabilities["a"])
-        for i in range(1, 10):
+        for i in range(1, 11):
             print(i, ":", card_probabilities[str(i)])
 
     def remove_card_from_deck(self, index):

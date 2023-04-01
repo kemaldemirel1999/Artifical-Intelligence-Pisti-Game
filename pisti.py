@@ -21,6 +21,7 @@ class Pisti:
 
         cards_on_desk = self.all_cards[0:4]
         beaten = False
+        self.save_card_info(cards_on_desk[3])
         for round in range(0, 6):
             print("***************************************")
             print(f"Round{round + 1}:")
@@ -28,7 +29,6 @@ class Pisti:
 
             # Oyun dosyaya kaydedilir.
             self.write_file_game_info(computer_deck, person_deck, round)
-
             for turn in range(1, 9):
                 print("------------------------------------------------")
                 self.show_cards_on_the_desk(cards_on_desk, beaten)
