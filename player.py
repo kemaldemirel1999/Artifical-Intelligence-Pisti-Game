@@ -101,6 +101,10 @@ class Player:
                     tmp = sorted_deck[j + 1]
                     sorted_deck[j + 1] = sorted_deck[j]
                     sorted_deck[j] = tmp
+        print("Sorted deck val:", end="")
+        for val in sorted_deck:
+            print(val,", ", end="")
+        print()
         return sorted_deck
 
     def sort_deck_by_probability(self):
@@ -108,10 +112,14 @@ class Player:
         sorted_deck = self.deck.copy()
         for i in range(len(self.deck)):
             for j in range(len(self.deck) - 1):
-                if card_probabilities[sorted_deck[j][0]] < card_probabilities[sorted_deck[j + 1][0]]:
+                if card_probabilities[sorted_deck[j][0]] > card_probabilities[sorted_deck[j + 1][0]]:
                     tmp = sorted_deck[j + 1]
                     sorted_deck[j + 1] = sorted_deck[j]
                     sorted_deck[j] = tmp
+        print("Sorted deck prob:", end="")
+        for val in sorted_deck:
+            print(val,f"({card_probabilities[val[0]]}), ", end="")
+        print()
         return sorted_deck
 
     def get_index_of_card(self, card):
@@ -134,9 +142,6 @@ class Player:
         for i in range(1, 11):
             print(i, ":", card_probabilities[str(i)])
 
-    def remove_card_from_deck(self, index):
-        del self.deck[index]
-
     def find_card_probabilities(self):
         count_a, count_j, count_q, count_k, digit_card_counter, remaining_total_card = self.find_num_of_played_cards()
         card_probabilities = {}
@@ -144,7 +149,7 @@ class Player:
         card_probabilities["j"] = (4 - count_j) / remaining_total_card
         card_probabilities["k"] = (4 - count_k) / remaining_total_card
         card_probabilities["q"] = (4 - count_q) / remaining_total_card
-
+        print("Remaining_total_card:",remaining_total_card)
         for i in range(1, 11):
             index = str(i)
             card_probabilities[index] = (4 - digit_card_counter[index]) / remaining_total_card
@@ -175,6 +180,9 @@ class Player:
 
         remaining_total_card = self.total_card - (count_a + count_j + count_k + count_q + total)
         return count_a, count_j, count_q, count_k, digit_card_counter, remaining_total_card
+
+    def remove_card_from_deck(self, index):
+        del self.deck[index]
 
     def check_deck_index_validity(self, index):
         if index < 0 or index > len(self.deck) - 1:
@@ -211,14 +219,7 @@ class Player:
     def calculate_score(self):
         point = 0
         for card in self.winned_cards:
-            if card[0] == "j":
-                point = point + 1
-            elif card[0] == "10" and card[1] == "diamond":
-                point = point + 3
-            elif card[0] == "2" and card[1] == "clover":
-                point = point + 2
-            elif card[0] == "a":
-                point = point + 1
+            point = point + card[3]
         point = point + 10 * self.num_of_pisti
         self.num_of_pisti = 0
         self.score = self.score + point

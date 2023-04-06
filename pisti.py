@@ -6,11 +6,6 @@ import random
 class Pisti:
 
     def __init__(self):
-        self.J = 1
-        self.DIAMOND_10 = 3
-        self.CLOVER_2 = 2
-        self.AS = 1
-        self.PISTI = 10
         self.all_cards = self.get_all_cards()
         self.computer = Player(True)
         self.person = Player(False)
@@ -18,15 +13,13 @@ class Pisti:
 
     def start(self):
         self.shuffle(self.all_cards)
-
         cards_on_desk = self.all_cards[0:4]
-        beaten = False
         self.save_card_info(cards_on_desk[3])
         for round in range(0, 6):
             print("***************************************")
             print(f"Round{round + 1}:")
             computer_deck, person_deck = self.give_players_their_cards(round)
-
+            beaten = False
             # Oyun dosyaya kaydedilir.
             self.write_file_game_info(computer_deck, person_deck, round)
             for turn in range(1, 9):
@@ -45,16 +38,6 @@ class Pisti:
             self.clear_players_winned_cards()
 
         self.find_game_result()
-
-    def write_file_game_info(self, computer_deck, person_deck, round):
-        filename = "tur" + str(round + 1) + ".txt"
-        self.txt_operations.write_txt(filename, computer_deck, person_deck)
-
-    def save_card_info(self, playing_card):
-        arr = []
-        arr.append(playing_card)
-        self.computer.add_cards_memory(arr)
-        self.person.add_cards_memory(arr)
 
     def computer_turn(self, beaten, cards_on_desk):
         playing_card, is_successful = self.computer.play(cards_on_desk, beaten)
@@ -91,12 +74,24 @@ class Pisti:
         else:
             return False
 
+    # Her oyuncunun destesi dosyaya yazılır
+    def write_file_game_info(self, computer_deck, person_deck, round):
+        filename = "tur" + str(round + 1) + ".txt"
+        self.txt_operations.write_txt(filename, computer_deck, person_deck)
+
+    # İlgili kart veya kartlar oyuncunun hafızasına kaydedilir.
+    def save_card_info(self, playing_card):
+        arr = [playing_card]
+        self.computer.add_cards_memory(arr)
+        self.person.add_cards_memory(arr)
+
+    # Oyun sonucu hesaplanır. Oyuncuların puanları ve kazanan kişi belirlenir.
     def find_game_result(self):
         self.calculate_player_with_more_card()
         if self.computer.score > self.person.score:
             print("Computer win the game.")
-            print("Computer score:",self.computer.score)
-            print("Person score:",self.person.score)
+            print("Computer score:", self.computer.score)
+            print("Person score:", self.person.score)
         elif self.computer.score < self.person.score:
             print("Person win the game.")
             print("Computer score:", self.computer.score)
@@ -106,24 +101,29 @@ class Pisti:
             print("Computer score:", self.computer.score)
             print("Person score:", self.person.score)
 
+    # Oyun sonunda daha fazla karta sahip olan oyuncu 3 puan kazanır
     def calculate_player_with_more_card(self):
         if self.person.get_num_of_all_winned_cards() > self.computer.get_num_of_all_winned_cards():
             self.person.increase_score(3)
         elif self.person.get_num_of_all_winned_cards() < self.computer.get_num_of_all_winned_cards():
             self.computer.increase_score(3)
 
+    # Oyuncuların puanları hesaplanır.
     def calculate_players_score(self):
         self.person.calculate_score()
         self.computer.calculate_score()
 
+    # Her tur sonunda, oyuncuların kazandığı kartları siler.
     def clear_players_winned_cards(self):
         self.person.clear_winned_cards()
         self.computer.clear_winned_cards()
 
+    # Oyun masasındaki kartları temizler.
     def clear_the_cards_on_desk(self):
         cards_on_desk = []
         return cards_on_desk
 
+    # Oyunculara her turda kartların dağıtılmasını sağlar.
     def give_players_their_cards(self, round):
         computer_deck = self.all_cards[8 * round + 4: 8 * round + 8]
         person_deck = self.all_cards[8 * round + 8: 8 * round + 12]
@@ -131,9 +131,11 @@ class Pisti:
         self.computer.set_deck(computer_deck)
         return computer_deck, person_deck
 
+    # Oyun kartların rastgele olacak şekilde karıştırır.
     def shuffle(self, deck):
         random.shuffle(deck)
 
+    # Masa üzerindeki kartları konsolda gösterir. En alttaki karttan en yukarıya doğru göstermektedir.
     def show_cards_on_the_desk(self, cards_on_the_desk, beaten):
         print("From Bottom to Top cards: ", end="")
         card_index = 0
@@ -146,6 +148,8 @@ class Pisti:
             card_index = card_index + 1
         print("")
 
+    # Kart destesini oluşturur.
+    # İlgili kartların puanları atanır.
     def get_all_cards(self):
         cards = []
         for i in range(1, 11):
