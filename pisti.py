@@ -15,11 +15,11 @@ class Pisti:
         self.shuffle(self.all_cards)
         cards_on_desk = self.all_cards[0:4]
         self.save_card_info(cards_on_desk[3])
+        beaten = False
         for round in range(0, 6):
             print("***************************************")
             print(f"Round{round + 1}:")
             computer_deck, person_deck = self.give_players_their_cards(round)
-            beaten = False
             # Oyun dosyaya kaydedilir.
             self.write_file_game_info(computer_deck, person_deck, round)
             for turn in range(1, 9):
