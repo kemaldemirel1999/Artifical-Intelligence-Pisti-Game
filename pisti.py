@@ -4,82 +4,97 @@ import random
 
 
 class Pisti:
-
+    '''
+        Pisti oyununun kontrol edildiği class'dır.
+    '''
     def __init__(self):
-        self.all_cards = self.get_all_cards()
-        self.computer = Player(True)
-        self.person = Player(False)
-        self.txt_operations = TxtOperations()
-        self.latest_winner = ""
+        self.all_cards = self.get_all_cards() # Oyun kartları oluşturulur.
+        self.computer = Player(True) # Bilgisayar oyuncusu Player içerisine True verilince oluşturulmuştur olur.
+        self.person = Player(False) # İnsan olan oyuncu Player içerisine True verilince oluşturulmuş olur.
+        self.txt_operations = TxtOperations() # Dosya işlemleri için kullanılacaktır.
+        self.latest_winner = "" # Yerdeki kartları en son alan kişiyi temsil eder.
 
     def start(self):
-        self.shuffle(self.all_cards)
+        self.shuffle(self.all_cards) # İskambil kartlarını rastgele olacak şekilde karıştırır.
         cards_on_desk = self.all_cards[0:4]
         self.save_card_info(cards_on_desk[3])
-        beaten = False
+        beaten = False # Yerdeki kapalı ilk 3 kartın gösterilip gösterilmeyeceğini belirler.
         for round in range(0, 6):
             print("***************************************")
             print(f"Round{round + 1}:")
-            computer_deck, person_deck = self.give_players_their_cards(round)
-            # Oyun dosyaya kaydedilir.
-            self.write_file_game_info(computer_deck, person_deck, round)
+            computer_deck, person_deck = self.give_players_their_cards(round) # Oyunculara kartlar dağıtılır.
+            self.write_file_game_info(computer_deck, person_deck, round) # Oyun dosyaya kaydedilir.
             for turn in range(1, 9):
                 print("------------------------------------------------")
                 self.show_cards_on_the_desk(cards_on_desk, beaten)
                 if turn % 2 == 1:
+                    # Oyunu oynayan kişinin sırasıdır.
                     cards_on_desk, beaten, playing_card = self.person_turn(beaten, cards_on_desk)
                 else:
+                    # Bilgisarın sırasıdır.
                     cards_on_desk, beaten, playing_card = self.computer_turn(beaten, cards_on_desk)
 
+                # Oynanan kart bilgisayarın hamlesini optimize etmek için kullanılacaktır
+                # Daha iyi sonuçlar almak için bilgisayarın hafızasına kayıt edilecektir.
                 self.save_card_info(playing_card)
 
             # Oyuncu skorları hesaplanır.
             self.calculate_players_score()
             # Kazanılan kartlar listesi sıfırlanır.
             self.clear_players_winned_cards()
+
+        # Oyun sonunda masada kalan kartların toplam puanı hesaplanır
         point = 0
         for card in cards_on_desk:
             point = point + card[3]
+        # Yerde kalan kartların puanı hesaplandıktan sonra yerdeki kartları en son kazanan oyuncuya bu puan verilir.
         if self.latest_winner == "computer":
             self.computer.add_winned_cards(cards_on_desk)
             self.computer.increase_score(point)
+            self.computer.num_of_all_winned_cards += len(cards_on_desk)
         elif self.latest_winner == "person":
             self.person.add_winned_cards(cards_on_desk)
             self.person.increase_score(point)
-
+            self.person.num_of_all_winned_cards += len(cards_on_desk)
+        # Oyun sonucu hesaplanır.
         self.find_game_result()
 
+
     def computer_turn(self, beaten, cards_on_desk):
+        # Bilgisayar hamlesini yapar. Oynanılan kart ve hamlenin başarılı olup olmadığı bilgisi elde edilir.
         playing_card, is_successful = self.computer.play(cards_on_desk, beaten)
-        if is_successful:
-            self.computer.add_cards_memory(cards_on_desk)
-            if self.is_pisti(cards_on_desk, playing_card):
+
+        if is_successful: # Hamle başarılı ise gerekli işlemler yapılır.
+            self.computer.add_cards_memory(cards_on_desk) # Oyun masasında yerdeki kartlar bilgisayar hafızasına kaydedilir.
+            if self.is_pisti(cards_on_desk, playing_card): # Eğer pişti ise
                 print("Pisti Yapildi.")
-                self.computer.increase_num_of_pisti()
-            cards_on_desk.append(playing_card)
-            self.computer.add_winned_cards(cards_on_desk)
-            cards_on_desk = self.clear_the_cards_on_desk()
-            beaten = True
+                self.computer.increase_num_of_pisti() # yapılan pişti sayısı artırılır.
+            cards_on_desk.append(playing_card) # oynanılan masaya eklenir.
+            self.computer.add_winned_cards(cards_on_desk) # yerdeki kartlar kazanılan kartlar listesine eklenir.
+            cards_on_desk = self.clear_the_cards_on_desk() # yerdeki kartlar masadan temizlenir.
+            beaten = True # ilk turda 3ü kapalı 1i açık kart durumu için kullanılır. Hamle başarılı olduğundan 'true' olur.
             self.latest_winner = "computer"
         else:
-            cards_on_desk.append(playing_card)
+            cards_on_desk.append(playing_card) # en son oynanılan kart masaya eklenir.
         return cards_on_desk, beaten, playing_card
 
     def person_turn(self, beaten, cards_on_desk):
+        # Oynanılan kart ve hamlenin başarılı olup olmadığı bilgisi elde edilir.
         playing_card, is_successful = self.person.play(cards_on_desk, beaten)
         if is_successful:
             if self.is_pisti(cards_on_desk, playing_card):
                 print("Pisti yapildi.")
-                self.person.increase_num_of_pisti()
-            cards_on_desk.append(playing_card)
-            self.person.add_winned_cards(cards_on_desk)
-            cards_on_desk = self.clear_the_cards_on_desk()
-            beaten = True
+                self.person.increase_num_of_pisti() # Yapılan pişti sayısı artırılır.
+            cards_on_desk.append(playing_card) # kart oyun masasına eklenir.
+            self.person.add_winned_cards(cards_on_desk) # masadaki kartlar kazanılan kartlara eklenir.
+            cards_on_desk = self.clear_the_cards_on_desk() # oyun masası temizlenir
+            beaten = True # ilk turda 3ü kapalı 1i açık kart durumu için kullanılır. Hamle başarılı olduğundan 'true' olur.
             self.latest_winner = "person"
         else:
-            cards_on_desk.append(playing_card)
+            cards_on_desk.append(playing_card) # en son oynanılan kart masaya eklenir.
         return cards_on_desk, beaten, playing_card
 
+    # Pisti olup olmadığı kontrol edilir.
     def is_pisti(self, cards_on_desk, playing_card):
         if len(cards_on_desk) == 1 and playing_card[0] != "j":
             return True

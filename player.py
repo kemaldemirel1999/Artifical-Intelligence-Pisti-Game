@@ -1,42 +1,52 @@
 class Player:
 
     def __init__(self, is_computer):
-        self.deck = []
+        self.deck = [] # Oyuncunun destesidir.
         self.score = 0
         self.is_computer = is_computer
-        self.cards_memory = []
-        self.winned_cards = []
-        self.num_of_all_winned_cards = 0
-        self.num_of_pisti = 0
-        self.total_card = 52
+        self.cards_memory = [] # Kartları hafızada tutmaya ve bilgisayar işlem yaparken optimize etmek için kullanılacaktır.
+        self.winned_cards = [] # Kazanılan kartları tutar.
+        self.num_of_all_winned_cards = 0 # Kazanılan toplam kart sayısıdır.
+        self.num_of_pisti = 0 # Toplam yapılan pişti sayısıdır.
+        self.total_card = 52 # Oyundaki toplam kart sayısı
 
     def play(self, cards_on_desk, beaten):
         # self.print_card_memory()
-        if self.is_computer:
+        if self.is_computer:# Bilgisayar hamle yapar.
             return self.computer_move(cards_on_desk, beaten)
-        else:
+        else:# İnsan hamle yapar
             return self.person_move(cards_on_desk)
 
     def computer_move(self, cards_on_desk, beaten):
         deck_on_desk = cards_on_desk[:]
         if not beaten:
+            # İlk 3 kart kapalı şekilde ise bilgisayarın erişmemesi için kaydedilmez.
             deck_on_desk = cards_on_desk[3:len(cards_on_desk)]
-        self.add_cards_memory(deck_on_desk)
-        top_card_on_desk = self.get_top_card_on_desk(deck_on_desk)
-        playing_card, index = self.computer_decision(deck_on_desk)
-        self.print_deck()
-        print("Computer's Played Card:", playing_card)
-        self.remove_card_from_deck(index)
+
+        self.add_cards_memory(deck_on_desk) # Kartlar bilgisayarın hafızasına kaydedilir.
+        top_card_on_desk = self.get_top_card_on_desk(deck_on_desk) # En üstteki kart bulunur.
+
+        # Olasılık, kart değerleri, rakip oyuncunun muhtemel hamlesi tahmini, rakip oyuncunun deste tahmini vs.
+        # Bu durumlar değerlendirilerek bilgisayar için en uygun hamle belirlenir.
+        playing_card, index = self.computer_decision(deck_on_desk) # Bilgisayar en optimize şekilde kart seçer ve indeks döner.
+
+        self.print_deck() # Test amaçlı kullanılmaktadır ve bilgisayarın destesi görüntülenir.
+        print("Computer's Played Card:", playing_card) # Bilgisayarın oynadığı kart
+        self.remove_card_from_deck(index) # Oynanılan kart desteden silinir.
+        # oynanılan kart ve hamlenin başarılı olup olmadığı bilgisi return edilir.
         return playing_card, self.is_it_successfull(top_card_on_desk, playing_card)
 
     def person_move(self, cards_on_desk):
         self.print_deck()
-        top_card_on_desk = self.get_top_card_on_desk(cards_on_desk)
+        top_card_on_desk = self.get_top_card_on_desk(cards_on_desk) # En üstteki kart belirlenir.
         while True:
             index = int(input("Enter card index that you want to play:"))
+            # Oyuncu olan kişi insan olduğu için geçersiz index girilip girilmediği kontrol edilir.
             if self.check_deck_index_validity(index):
                 playing_card = self.deck[index]
-                self.remove_card_from_deck(index)
+                self.remove_card_from_deck(index) # oynanılan kart desteden silinir
+
+                # oynanılan kart ve başarılı olup olmadığı bilgisi return edilir.
                 return playing_card, self.is_it_successfull(top_card_on_desk, playing_card)
             else:
                 print("Hatali Index Girildi. Tekrar Deneyiniz.")
@@ -126,6 +136,8 @@ class Player:
                 index = self.get_index_of_card(picked_card)
                 return picked_card, index
 
+
+    # Oyuncunun destesindeki kartlar değerlerine göre sıralanır. En azdan en çoğa doğru sorting yapılır.
     def sort_deck_by_value(self):
         sorted_deck_by_val = self.deck.copy()
         for i in range(len(self.deck)):
@@ -136,12 +148,30 @@ class Player:
                     sorted_deck_by_val[j+1] = tmp
         return sorted_deck_by_val
 
+
+
+    # Rakip oyuncunun o anki destesinde ilgili kartların bulunma olasılığı hesaplanır.
+    # Bu bilgi sort edilir ve en az bulunma olasılığından en fazlaya olacak şekilde sıralanır.
+    '''
+        her turda rakip destede kartların bulunma olasılığını bulur
+        Bu hamlede rakip oyuncunun destesinde bulunma olasılığı en az kartları belirlemek daha optimal bir hamle olacağı için
+        bu bilginin belirlenmesinde kullanılmaktadır. Sadece olasılık verisi sıralanması kullanılmamaktadır.
+        Bu fonksiyon yardım amaçlıdır ve başlı başına karar verilmesini sağlamaz.
+        Diğer verilere yardım amaçlı kartların o tur esnasında rakip destede bulunma olasılığını belirlenir.
+        Kart değeri, J(vale) oynanması, rakip deste tahmini vs verileri de kullanılmaktadır.
+    '''
     def get_sorted_opponent_deck_probabilities(self):
         opponent_deck_prob = self.get_card_probabilities()
         opponent_deck_length = len(self.deck) - 1
+
+        '''
+            Kartların bir sonraki turda oynanma olasılığı ile rakip destesindeki kart sayısı çarpılarak ilgili kartın 
+            rakip destede bulunma olasılığı belirlenir
+        '''
         for card_name in opponent_deck_prob:
             opponent_deck_prob[card_name] *= opponent_deck_length
 
+        # Bu veriler sorting işleminden geçirilir. En azdan en çoğa olacak şekilde sıralanır.
         unsorted_deck = self.deck.copy()
         for i in range(len(unsorted_deck)):
             for j in range(len(unsorted_deck)-1):
@@ -152,16 +182,26 @@ class Player:
         sorted_deck_by_probability = unsorted_deck
         return sorted_deck_by_probability, opponent_deck_prob
 
+
+    # Rakip oyuncuda ilgili kartların bir sonraki hamlede oynamasının olasılığını hesaplar.
+    # Kişinin destesinde bulunma olasılığı ile karıştırılmamalıdır
+    # 'card_probabilities' dictionary veri yapısında kaydedilir ve 'key = kart_ismi' ve 'value = olasılık' şeklinde tutulur.
     def get_card_probabilities(self):
-        known_cards = self.cards_memory.copy()
+        known_cards = self.cards_memory.copy() # Kendi destesindeki kartlar ve hafızadaki kartlar beraber hesap edilerek hesaplanacaktır.
         for card in self.deck:
             known_cards.append(card)
+        # İlgili kartın oyunda yerde ve oyuncuda kaç adet bulunduğu bilgisi 'dictionary' veri yapısında saklanır.
         card_counter = {"a": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0, "10": 0, "j": 0, "k": 0,
                         "q": 0}
         for card in known_cards:
             card_name = card[0]
             card_counter[card_name] += 1
-        num_of_unknown_cards = self.total_card - len(known_cards)
+
+
+        num_of_unknown_cards = self.total_card - len(known_cards) # Bilinmeyen toplam kart sayısı
+
+        # Kalan kartların bir sonraki round'da oynanma olasılığı hesaplanır.
+        # Kişinin destesinde bulunma olasılığı ile karıştırılmamalıdır
         card_probabilities = {}
         card_probabilities["a"] = round(((4 - card_counter["a"]) / num_of_unknown_cards) * 100 ,1)
         card_probabilities["j"] = round(((4 - card_counter["j"]) / num_of_unknown_cards) * 100 ,1)
@@ -172,6 +212,9 @@ class Player:
             card_probabilities[card_name] =  round(((4 - card_counter[card_name]) / num_of_unknown_cards) * 100,1)
         return card_probabilities
 
+
+    # Masanın en tepesindeki kart ile eşleşen kartlar veya J(value) bulunuyorsa bu kartlar bir array içerisine kaydedilir.
+    # İlgili array gerekli hamlenin hesaplanmasında yardımcı veri olarak kullanılacaktır.
     def find_matched_cards(self, top_card_on_desk):
         matched_cards = []
         for card in self.deck:
@@ -179,38 +222,42 @@ class Player:
                 matched_cards.append(card)
         return matched_cards
 
+
+    # Parametre olarak verilen kart hangi index'de tutuluyor ise o index return edilir.
     def get_index_of_card(self, card):
         for i in range(len(self.deck)):
             if self.deck[i][0] == card[0]:
                 return i
         return 0
 
-    def print_card_memory(self):
-        print("Memory:", end="")
-        for card in self.cards_memory:
-            print(card, ", ", end="")
-        print()
 
+    # Hamle yapıldıktan sonra ilgili kart, kendi destesinden silinir.
     def remove_card_from_deck(self, index):
         del self.deck[index]
 
+    # İnsan(oyuncu) hamle yaparken girdiği index'in geçerliliği kontrol edilir.
     def check_deck_index_validity(self, index):
         if index < 0 or index > len(self.deck) - 1:
             return False
         else:
             return True
 
+    # Masadaki kartların en üsttekini return eder. Eğer masa boş ise 'None' return edilir.
     def get_top_card_on_desk(self, cards_on_desk):
         if cards_on_desk is None or len(cards_on_desk) < 1:
             return None
         else:
             return cards_on_desk[len(cards_on_desk) - 1]
 
+    # Bilgisayarın hamleleri optimize etmek için geçmişte oynanan kartları hafızasında tutması gerekmektedir.
+    # Bilgisayarın hafızasına bu kartlar kaydedilir ve gerekli optimizasyon işlemleri yapılır
+    # Gerekli hesaplamalar için bilgiler elde edilesinde kullanılır.
     def add_cards_memory(self, cards_on_desk):
         for card in cards_on_desk:
             if not self.cards_memory.__contains__(card):
                 self.cards_memory.append(card)
 
+    # Hamlenin başarılı olup olmadığı belirlenir.
     def is_it_successfull(self, top_card_on_desk, playing_card):
         if top_card_on_desk is None:
             return False
@@ -219,14 +266,18 @@ class Player:
         else:
             return False
 
+
+    # Kazanılan kartlar arrayine kaydedilir
     def add_winned_cards(self, adding_winned_cards):
+
         for card in adding_winned_cards:
             self.winned_cards.append(card)
 
     def get_num_of_all_winned_cards(self):
         return self.num_of_all_winned_cards
 
-    def calculate_score(self):
+
+    def calculate_score(self): # Skor hesaplaması yapılır.
         point = 0
         for card in self.winned_cards:
             point = point + card[3]
@@ -256,3 +307,9 @@ class Player:
 
     def increase_score(self, adding_score):
         self.score = self.score + adding_score
+
+    def print_card_memory(self):
+        print("Memory:", end="")
+        for card in self.cards_memory:
+            print(card, ", ", end="")
+        print()
