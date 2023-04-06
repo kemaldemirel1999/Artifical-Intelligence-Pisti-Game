@@ -2,8 +2,12 @@ import os
 
 class TxtOperations:
 
+    '''
+        İlgili sınıf dosya işlemleri(read-write) yapmaktadır.
+    '''
     def __init__(self):
         self.deck_path = os.getcwd() + "/decks/"
+
     def write_txt(self, filename, computer_deck, person_deck):
         file = open(self.deck_path+ filename, "w")
         file.write("Computer's Deck:\n")

@@ -10,6 +10,7 @@ class Pisti:
         self.computer = Player(True)
         self.person = Player(False)
         self.txt_operations = TxtOperations()
+        self.latest_winner = ""
 
     def start(self):
         self.shuffle(self.all_cards)
@@ -36,6 +37,15 @@ class Pisti:
             self.calculate_players_score()
             # Kazanılan kartlar listesi sıfırlanır.
             self.clear_players_winned_cards()
+        point = 0
+        for card in cards_on_desk:
+            point = point + card[3]
+        if self.latest_winner == "computer":
+            self.computer.add_winned_cards(cards_on_desk)
+            self.computer.increase_score(point)
+        elif self.latest_winner == "person":
+            self.person.add_winned_cards(cards_on_desk)
+            self.person.increase_score(point)
 
         self.find_game_result()
 
@@ -50,6 +60,7 @@ class Pisti:
             self.computer.add_winned_cards(cards_on_desk)
             cards_on_desk = self.clear_the_cards_on_desk()
             beaten = True
+            self.latest_winner = "computer"
         else:
             cards_on_desk.append(playing_card)
         return cards_on_desk, beaten, playing_card
@@ -64,6 +75,7 @@ class Pisti:
             self.person.add_winned_cards(cards_on_desk)
             cards_on_desk = self.clear_the_cards_on_desk()
             beaten = True
+            self.latest_winner = "person"
         else:
             cards_on_desk.append(playing_card)
         return cards_on_desk, beaten, playing_card
