@@ -6,6 +6,9 @@ import random
 class Pisti:
     '''
         Pisti oyununun kontrol edildiği class'dır.
+
+        İnsan(biz) kendi hamlemizi kart index'i girerek belirleriz. İndex 0(sıfır)'dan başlamaktadır.
+        Karşı bilgisayar yapay zeka ile kendi hamlesini belirler.
     '''
     def __init__(self):
         self.all_cards = self.get_all_cards() # Oyun kartları oluşturulur.
