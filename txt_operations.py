@@ -15,7 +15,7 @@ class TxtOperations:
             info = str(line[0]) + ", "+line[1] + ", " +line[2]
             file.write(info)
             file.write("\n")
-        file.write("\n************\n\nx")
+        file.write("\n************\n\n")
         file.write("Person's Deck:\n")
         for line in person_deck:
             info = str(line[0]) + ", " + line[1] + ", " + line[2]
