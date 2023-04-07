@@ -51,6 +51,17 @@ class Player:
             else:
                 print("Hatali Index Girildi. Tekrar Deneyiniz.")
 
+    '''
+        Bilgisayarın hamlesini belirler. Bu işlem en optimal olacak şekilde hesaplanır.
+        -Masadaki desteyi kazanacak şekilde oynanılması
+        -Rakip destede kartların bulunma olasılığı
+        -Bir sonraki turda rakibin kartı oynama olasılığı
+        -Destedeki kartların değerlerine göre sıralanması
+        -J(vale) verimli kullanılması
+        ve daha fazlası
+        
+        Detaylar yorum satırlarında bulunmaktadır.
+    '''
     def computer_decision(self, deck_on_desk):
         top_card_on_desk = self.get_top_card_on_desk(deck_on_desk)
         if top_card_on_desk is not None:  # Masa üzerinde kart bulunduğu durumda.
